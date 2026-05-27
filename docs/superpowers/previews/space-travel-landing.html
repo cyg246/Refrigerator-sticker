@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>广东海洋大学冰箱贴作品展</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --text: #fff;
+      --muted: rgba(255, 255, 255, 0.82);
+      --line: rgba(255, 255, 255, 0.12);
+      --accent: #b9ebff;
+      --gold: #ffe1a9;
+      --progress: 0%;
+    }
+    * { box-sizing: border-box; }
+    html { background: #000; scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: #000;
+      color: var(--text);
+      font-family: "Barlow", sans-serif;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+    a, button { color: inherit; font: inherit; }
+    a { text-decoration: none; }
+    button { border: 0; background: none; cursor: pointer; }
+    .progress-line {
+      position: fixed; top: 0; left: 0; width: var(--progress); height: 3px; z-index: 200;
+      background: linear-gradient(90deg, var(--accent), var(--gold));
+      box-shadow: 0 0 16px rgba(255, 225, 169, 0.28);
+    }
+    .liquid-glass {
+      background: rgba(255,255,255,0.01);
+      background-blend-mode: luminosity;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      border: none;
+      box-shadow: inset 0 1px 1px rgba(255,255,255,0.1);
+      position: relative;
+      overflow: hidden;
+    }
+    .liquid-glass::before {
+      content: "";
+      position: absolute; inset: 0; border-radius: inherit; padding: 1.4px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 20%, rgba(255,255,255,0) 40%, rgba(255,255,255,0) 60%, rgba(255,255,255,0.15) 80%, rgba(255,255,255,0.45) 100%);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+    .liquid-glass-strong {
+      background: rgba(255,255,255,0.01);
+      background-blend-mode: luminosity;
+      backdrop-filter: blur(50px);
+      -webkit-backdrop-filter: blur(50px);
+      border: none;
+      box-shadow: 4px 4px 4px rgba(0,0,0,0.05), inset 0 1px 1px rgba(255,255,255,0.15);
+      position: relative;
+      overflow: hidden;
+    }
+    .liquid-glass-strong::before {
+      content: "";
+      position: absolute; inset: 0; border-radius: inherit; padding: 1.4px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.2) 20%, rgba(255,255,255,0) 40%, rgba(255,255,255,0) 60%, rgba(255,255,255,0.2) 80%, rgba(255,255,255,0.5) 100%);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+    .nav {
+      position: fixed; top: 16px; left: 0; right: 0; z-index: 120; padding: 0 32px;
+    }
+    .nav-inner {
+      max-width: 1400px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .nav-logo {
+      width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center;
+      font-family: "Instrument Serif", serif; font-style: italic; font-size: 32px;
+    }
+    .nav-links { display: flex; align-items: center; gap: 6px; padding: 6px; border-radius: 999px; }
+    .nav-links a { padding: 10px 12px; border-radius: 999px; font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.9); }
+    .nav-cta, .cta, .cta-secondary {
+      display: inline-flex; align-items: center; gap: 10px; border-radius: 999px; padding: 12px 18px; white-space: nowrap;
+      transition: transform 0.24s ease, box-shadow 0.24s ease;
+    }
+    .nav-cta, .cta {
+      background: white; color: black; font-size: 14px; font-weight: 600;
+    }
+    .cta-secondary {
+      color: white; font-size: 14px; font-weight: 500;
+    }
+    .nav-cta:hover, .cta:hover, .cta-secondary:hover, .work-card:hover, .archive-card:hover {
+      transform: translateY(-5px);
+    }
+    .nav-spacer { width: 48px; height: 48px; opacity: 0; }
+    .section { position: relative; min-height: 100vh; overflow: hidden; background: #000; }
+    .hero-video, .cap-video { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
+    .hero-video video {
+      position: absolute; left: 50%; top: 0; transform: translateX(-50%);
+      width: 120%; height: 120%; object-fit: cover; object-position: top; opacity: 0;
+    }
+    .cap-video video {
+      position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0;
+    }
+    .hero-content, .cap-content {
+      position: relative; z-index: 10; min-height: 100vh; display: flex; flex-direction: column; padding: 0 16px;
+    }
+    .hero-center {
+      flex: 1; display: flex; align-items: center; justify-content: center; text-align: center; padding-top: 96px;
+    }
+    .hero-stack {
+      max-width: 1120px; display: flex; flex-direction: column; align-items: center;
+    }
+    .reveal {
+      opacity: 0; transform: translateY(20px); filter: blur(10px);
+      transition: opacity 0.9s ease, transform 0.9s ease, filter 0.9s ease;
+    }
+    .reveal.visible {
+      opacity: 1; transform: translateY(0); filter: blur(0);
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 12px; padding: 6px; border-radius: 999px; margin-bottom: 20px;
+    }
+    .new-pill {
+      padding: 8px 14px; border-radius: 999px; background: white; color: black; font-size: 12px; font-weight: 700;
+    }
+    .hero-badge .text {
+      padding-right: 12px; font-size: 14px; color: rgba(255,255,255,0.92);
+    }
+    .blur-title {
+      display: flex; flex-wrap: wrap; justify-content: center; row-gap: 0.1em; max-width: 980px; margin: 0;
+      font-family: "Instrument Serif", serif; font-style: italic; font-size: clamp(62px, 8.6vw, 128px);
+      line-height: 0.84; letter-spacing: -4px;
+    }
+    .blur-title span {
+      display: inline-block; margin-right: 0.28em; opacity: 0; transform: translateY(50px); filter: blur(10px);
+    }
+    .blur-title.in-view span { animation: wordIn 0.7s ease-out forwards; }
+    .hero-sub {
+      margin-top: 20px; max-width: 860px; font-size: clamp(15px, 1.6vw, 18px); font-weight: 300; line-height: 1.6;
+    }
+    .hero-actions {
+      display: flex; align-items: center; gap: 18px; flex-wrap: wrap; justify-content: center; margin-top: 28px;
+    }
+    .hero-stats {
+      display: flex; gap: 16px; margin-top: 34px; flex-wrap: wrap; justify-content: center;
+    }
+    .stat-card {
+      width: 230px; padding: 18px 18px 20px; border-radius: 22px; text-align: left;
+    }
+    .icon-stroke {
+      width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .icon-play {
+      width: 18px; height: 18px; fill: currentColor;
+    }
+    .stat-card svg { width: 28px; height: 28px; color: white; display: block; }
+    .stat-number {
+      margin-top: 58px; font-family: "Instrument Serif", serif; font-style: italic; font-size: 42px; line-height: 1; letter-spacing: -1px;
+    }
+    .stat-label { margin-top: 10px; font-size: 12px; line-height: 1.45; color: white; }
+    .hero-bottom {
+      display: flex; flex-direction: column; align-items: center; gap: 16px; padding-bottom: 32px;
+    }
+    .hero-chip {
+      padding: 8px 14px; border-radius: 999px; font-size: 12px; font-weight: 500;
+    }
+    .hero-names {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 28px 44px; text-align: center;
+      font-family: "Instrument Serif", serif; font-style: italic; font-size: clamp(26px, 3vw, 40px); letter-spacing: -0.04em;
+    }
+    .cap-content { padding: 96px 32px 56px; }
+    .cap-top, .archive-band {
+      max-width: 1300px; width: 100%; margin-left: auto; margin-right: auto;
+    }
+    .cap-kicker, .archive-kicker {
+      font-size: 14px; color: rgba(255,255,255,0.82); margin-bottom: 20px;
+    }
+    .cap-title, .archive-title {
+      margin: 0; font-family: "Instrument Serif", serif; font-style: italic; font-size: clamp(42px, 6vw, 88px); line-height: 0.9; letter-spacing: -2px;
+    }
+    .cards-grid, .archive-grid {
+      width: 100%; display: grid; gap: 24px;
+    }
+    .cards-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 72px; }
+    .archive-band { margin-top: 46px; padding-bottom: 56px; }
+    .archive-head {
+      display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 24px;
+    }
+    .archive-desc {
+      max-width: 520px; font-size: 15px; line-height: 1.75; color: rgba(255,255,255,0.78);
+    }
+    .archive-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .work-card, .archive-card {
+      text-align: left; transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .work-card {
+      min-height: 390px; padding: 24px; border-radius: 24px; display: flex; flex-direction: column;
+    }
+    .card-top {
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 14px;
+    }
+    .card-icon-wrap, .card-icon-inner {
+      width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; flex: 0 0 auto;
+    }
+    .card-icon-inner svg { width: 24px; height: 24px; fill: currentColor; }
+    .card-tags {
+      display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; max-width: 70%;
+    }
+    .card-tag {
+      padding: 7px 12px; border-radius: 999px; font-size: 11px; color: rgba(255,255,255,0.92); white-space: nowrap;
+    }
+    .card-media {
+      margin-top: 18px; overflow: hidden; border-radius: 18px; height: 180px;
+    }
+    .card-media img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    .card-body { margin-top: auto; padding-top: 22px; }
+    .card-title {
+      margin: 0; font-family: "Instrument Serif", serif; font-style: italic; font-size: clamp(34px, 3vw, 44px); line-height: 1; letter-spacing: -1px;
+    }
+    .card-text {
+      margin-top: 12px; max-width: 32ch; font-size: 14px; line-height: 1.45; color: rgba(255,255,255,0.9);
+    }
+    .card-meta {
+      margin-top: 12px; font-size: 11px; color: rgba(255,255,255,0.62); letter-spacing: 0.12em; text-transform: uppercase;
+    }
+    .archive-card {
+      padding: 14px; border-radius: 22px; display: flex; flex-direction: column; align-items: stretch;
+    }
+    .archive-card img {
+      width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 16px; display: block; margin-bottom: 12px;
+    }
+    .archive-card strong {
+      font-family: "Instrument Serif", serif; font-style: italic; font-size: 28px; line-height: 1; letter-spacing: -0.04em; margin-bottom: 8px;
+    }
+    .archive-card p {
+      margin: 0; font-size: 13px; line-height: 1.55; color: rgba(255,255,255,0.82);
+    }
+    .archive-card small {
+      margin-top: 10px; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.54);
+    }
+    .modal {
+      position: fixed; inset: 0; z-index: 100; display: none; align-items: center; justify-content: center; padding: 24px; background: rgba(0,0,0,0.72); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    }
+    .modal.open { display: flex; }
+    .modal-card {
+      position: relative; width: min(1120px, 100%); max-height: 88vh; overflow: auto; display: grid; grid-template-columns: 1fr 0.95fr; gap: 24px; padding: 24px; border-radius: 32px;
+    }
+    .modal-media {
+      position: relative; min-height: 68vh; border-radius: 24px; overflow: hidden; background: linear-gradient(160deg, rgba(9, 30, 45, 0.96), rgba(4, 15, 24, 0.98));
+    }
+    .modal-media::before {
+      content: ""; position: absolute; inset: 8%; border-radius: 24px; border: 1px solid rgba(255,255,255,0.08); background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+    }
+    .modal-media img {
+      position: absolute; left: 16%; top: 12%; width: 68%; height: 74%; object-fit: cover; border-radius: 22px; box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+    }
+    .modal-kicker {
+      color: rgba(255,255,255,0.72); font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase;
+    }
+    .modal-title {
+      margin: 14px 0 16px; font-family: "Instrument Serif", serif; font-style: italic; font-size: clamp(36px, 5vw, 68px); line-height: 0.94; letter-spacing: -0.05em;
+    }
+    .modal-lead {
+      color: rgba(255,255,255,0.95); font-size: 18px; line-height: 1.75; margin-bottom: 14px;
+    }
+    .modal-body {
+      color: rgba(255,255,255,0.74); font-size: 15px; line-height: 1.85; margin-bottom: 22px;
+    }
+    .modal-tags {
+      display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px;
+    }
+    .modal-tags span {
+      padding: 8px 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.86);
+    }
+    .modal-actions {
+      display: flex; gap: 12px; flex-wrap: wrap;
+    }
+    .modal-close {
+      position: absolute; top: 18px; right: 18px; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-size: 18px;
+    }
+    @keyframes wordIn {
+      0% { filter: blur(10px); opacity: 0; transform: translateY(50px); }
+      50% { filter: blur(5px); opacity: 0.5; transform: translateY(-5px); }
+      100% { filter: blur(0px); opacity: 1; transform: translateY(0); }
+    }
+    @media (max-width: 1180px) {
+      .cards-grid, .archive-grid, .modal-card { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 860px) {
+      .nav { padding: 0 16px; }
+      .nav-links { display: none; }
+      .hero-actions, .hero-stats, .archive-head, .modal-actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .cap-content { padding: 96px 16px 40px; }
+      .hero-content { padding: 0 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="progress-line"></div>
+
+  <div class="page">
+    <header class="nav">
+      <div class="nav-inner">
+        <div class="nav-logo liquid-glass">海</div>
+        <div class="nav-links liquid-glass">
+          <a href="#top">首页</a>
+          <a href="#works">重点展映</a>
+          <a href="#archive">归档总览</a>
+          <button class="nav-cta" data-scroll="#works">
+            进入展馆
+            <svg class="icon-stroke" viewBox="0 0 24 24">
+              <path d="M7 17L17 7"></path>
+              <path d="M7 7h10v10"></path>
+            </svg>
+          </button>
+        </div>
+        <div class="nav-spacer"></div>
+      </div>
+    </header>
+
+    <section class="section" id="top">
+      <div class="hero-video">
+        <video class="js-fading-video" autoplay muted playsinline preload="auto" src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260418_080021_d598092b-c4c2-4e53-8e46-94cf9064cd50.mp4"></video>
+      </div>
+
+      <div class="hero-content">
+        <div class="hero-center">
+          <div class="hero-stack">
+            <div class="hero-badge liquid-glass reveal" data-delay="0.4">
+              <span class="new-pill">Showcase</span>
+              <span class="text">广东海洋大学冰箱贴创意作品线上展映</span>
+            </div>
+
+            <h1 class="blur-title" data-blur-title>
+              <span style="animation-delay:0s;">把校园记忆</span>
+              <span style="animation-delay:0.1s;">捏成会发光的</span>
+              <span style="animation-delay:0.2s;">冰箱贴作品</span>
+            </h1>
+
+            <p class="hero-sub reveal" data-delay="0.8">
+              这版已经收成了纯前端静态展示站，适合直接走 GitHub + Vercel。保留你认可的电影感视频、液态玻璃和高级排版，同时把作品内容、设计理念和总览区完整保留下来。
+            </p>
+
+            <div class="hero-actions reveal" data-delay="1.1">
+              <button class="cta liquid-glass-strong" data-scroll="#works">
+                查看重点展映
+                <svg class="icon-stroke" viewBox="0 0 24 24">
+                  <path d="M7 17L17 7"></path>
+                  <path d="M7 7h10v10"></path>
+                </svg>
+              </button>
+              <button class="cta-secondary" data-scroll="#archive">
+                直接看全部作品
+                <svg class="icon-play" viewBox="0 0 24 24">
+                  <polygon points="6 4 20 12 6 20 6 4"></polygon>
+                </svg>
+              </button>
+            </div>
+
+            <div class="hero-stats reveal" data-delay="1.3">
+              <div class="stat-card liquid-glass">
+                <svg class="icon-stroke" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="9"></circle>
+                  <path d="M12 7v5l3 2"></path>
+                </svg>
+                <div class="stat-number">3 件</div>
+                <div class="stat-label">首页重点展映作品，负责承接第一眼视觉体验</div>
+              </div>
+              <div class="stat-card liquid-glass">
+                <svg class="icon-stroke" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="9"></circle>
+                  <path d="M3 12h18"></path>
+                  <path d="M12 3a15 15 0 0 1 0 18"></path>
+                  <path d="M12 3a15 15 0 0 0 0 18"></path>
+                </svg>
+                <div class="stat-number">9 件</div>
+                <div class="stat-label">归档总览中的完整作品记录，可集中浏览与回看</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-bottom reveal" data-delay="1.4">
+          <div class="hero-chip liquid-glass">围绕海洋、校园、成长、归属与青春记忆的创意作品展映</div>
+          <div class="hero-names" id="heroNames"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="works">
+      <div class="cap-video">
+        <video class="js-fading-video" autoplay muted playsinline preload="auto" src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260418_094631_d30ab262-45ee-4b7d-99f3-5d5848c8ef13.mp4"></video>
+      </div>
+
+      <div class="cap-content">
+        <div class="cap-top reveal" data-delay="0.2">
+          <div class="cap-kicker">// Featured Works</div>
+          <h2 class="cap-title">重点展映<br />作品精选</h2>
+        </div>
+
+        <div class="cards-grid" id="cardsGrid"></div>
+
+        <div class="archive-band reveal" data-delay="0.5" id="archive">
+          <div class="archive-head">
+            <div>
+              <div class="archive-kicker">// Archive Wall</div>
+              <h3 class="archive-title">所有作品集中回看，<br />这就是“归档总览”。</h3>
+            </div>
+            <div class="archive-desc">
+              这块会展示当前全部作品。老师、同学和评审都可以从这里快速浏览、对比，并点击任意卡片进入详情。因为你现在选择纯前端版，所以这里的数据是固定展示内容，不带上传和后台。
+            </div>
+          </div>
+          <div class="archive-grid" id="archiveGrid"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="modal" id="workModal">
+    <div class="modal-card liquid-glass">
+      <button class="modal-close liquid-glass" id="modalClose">×</button>
+      <div class="modal-media">
+        <img id="modalImage" src="" alt="作品大图" />
+      </div>
+      <div class="modal-copy">
+        <div class="modal-kicker" id="modalKicker">Focused Work</div>
+        <div class="modal-title" id="modalTitle"></div>
+        <div class="modal-lead" id="modalLead"></div>
+        <div class="modal-body" id="modalBody"></div>
+        <div class="modal-tags" id="modalTags"></div>
+        <div class="modal-actions">
+          <button class="cta liquid-glass-strong" id="modalNext">
+            下一件作品
+            <svg class="icon-stroke" viewBox="0 0 24 24">
+              <path d="M7 17L17 7"></path>
+              <path d="M7 7h10v10"></path>
+            </svg>
+          </button>
+          <button class="cta liquid-glass" id="modalBack">返回展馆</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const featuredWorks = [
+      {
+        title: "南海启航",
+        image: "./archive-01.jpg",
+        student: "202512115122",
+        lead: "白字“立足南海”直指学校扎根南海的核心定位，绿色 GDOU 像身份锚点，把使命感和生命力一起放进作品之中。",
+        concept: "白字“立足南海”以极简方式直击学校扎根南海的核心定位。这四个字不仅是地理坐标，更是每一位广海大学子面向深蓝、服务海洋的战略底气。绿色 GDOU 像充满生命力的身份锚点，它既代表海洋生态的盎然生机，也代表母校赋予学子的鲜亮底色。",
+        tags: ["立足南海", "GDOU", "使命感", "海洋底色"],
+        icon: "image"
+      },
+      {
+        title: "扬帆起航",
+        image: "./archive-02.jpg",
+        student: "202411931112 / 202411931128",
+        lead: "大海、树丛、旗帜、船桨和摇篮式的自我投射构成完整成长叙事，像一段被引导的启航章节。",
+        concept: "作品以大海为背景，以绿色树丛象征广海的生机盎然。旗帜与船桨呼应“扬帆起航”的向前感，而躺在船中的姿态又像被摇篮托住，形成一种被校园孕育、被梦想承接的温柔比喻。",
+        tags: ["大海", "树丛", "船桨", "梦想孕育"],
+        icon: "movie"
+      },
+      {
+        title: "海大小猪包",
+        image: "./archive-03.jpg",
+        student: "202512466212",
+        lead: "软萌笑脸小猪与校徽缩写、校名手写体融合在一起，让作品不只可爱，还带着明确的校园归属感。",
+        concept: "这份石塑粘土手作以软萌笑脸小猪为主体，把 GDOU 校徽缩写与校名手写体融入细节之中。它既保留了手工捏制的温度，也把校园生活中治愈、亲近、可纪念的一面浓缩进这枚冰箱贴里。",
+        tags: ["笑脸小猪", "校徽缩写", "手作温度", "归属感"],
+        icon: "bulb"
+      }
+    ];
+
+    const archiveWorks = [
+      {
+        title: "南海启航",
+        image: "./archive-01.jpg",
+        student: "202512115122",
+        lead: "立足南海与 GDOU 共同构成很强的学校定位感。",
+        concept: "白字“立足南海”以极简方式直击学校扎根南海的核心定位。这四个字不仅是地理坐标，更是每一位广海大学子面向深蓝、服务海洋的战略底气。绿色 GDOU 像充满生命力的身份锚点，它既代表海洋生态的盎然生机，也代表母校赋予学子的鲜亮底色。",
+        tags: ["立足南海", "GDOU", "使命感", "海洋底色"],
+        icon: "image"
+      },
+      {
+        title: "扬帆起航",
+        image: "./archive-02.jpg",
+        student: "202411931112 / 202411931128",
+        lead: "大海、树丛、旗帜、船桨和梦想孕育构成完整成长叙事。",
+        concept: "作品以大海为背景，以绿色树丛象征广海的生机盎然。旗帜与船桨呼应“扬帆起航”的向前感，而躺在船中的姿态又像被摇篮托住，形成一种被校园孕育、被梦想承接的温柔比喻。",
+        tags: ["大海", "树丛", "船桨", "梦想孕育"],
+        icon: "movie"
+      },
+      {
+        title: "海大小猪包",
+        image: "./archive-03.jpg",
+        student: "202512466212",
+        lead: "软萌笑脸小猪与校名元素结合，校园归属感很直接。",
+        concept: "这份石塑粘土手作以软萌笑脸小猪为主体，把 GDOU 校徽缩写与校名手写体融入细节之中。它既保留了手工捏制的温度，也把校园生活中治愈、亲近、可纪念的一面浓缩进这枚冰箱贴里。",
+        tags: ["笑脸小猪", "校徽缩写", "手作温度", "归属感"],
+        icon: "bulb"
+      },
+      {
+        title: "海大黄油面包",
+        image: "./archive-04.jpg",
+        student: "202512466213",
+        lead: "黄油面包、海星、GDOU 与校园早餐记忆叠在一起。",
+        concept: "作品以黄油面包片为主题，由多种面包形态组成，中间的黄色海星象征海大人与海洋的不解之缘。醒目的 GDOU 直接宣告海大身份，不同造型的面包又让人联想到食堂早餐、早八路上的匆忙和朋友分享零食的日常。",
+        tags: ["黄油面包", "海星", "校园日常", "海大身份"],
+        icon: "image"
+      },
+      {
+        title: "《九秩听海，见花》",
+        image: "./archive-05.jpg",
+        student: "202311221120",
+        lead: "银蓝如潮浪，紫花承风华，像一束把校史柔化成情感记忆的花。",
+        concept: "银蓝如广海潮浪，紫花承九秩风华。花束承载着作者对母校的温柔心意，如海浪与繁花共生、同辉，让九十年的历史不只宏大，也被感性地托住。",
+        tags: ["潮浪银蓝", "紫花风华", "九秩校史", "温柔心意"],
+        icon: "bulb"
+      },
+      {
+        title: "《潮起海大，贝藏初心》",
+        image: "./archive-06.jpg",
+        student: "202312321610",
+        lead: "海洋与校史并置，把贝壳、海浪与 GDOU 变成完整学校叙事。",
+        concept: "作品以“海洋+校史”为双核心，用黏土的质感还原海大的温度与力量。紫色贝壳象征学校在岁月里孕育成长，蓝色海洋呼应九十年奔涌向前的发展历程，黄色 GDOU 像一束光，照亮海大学子奔赴海洋强国梦的道路。",
+        tags: ["海洋校史", "紫色贝壳", "蓝色海浪", "初心与发展"],
+        icon: "movie"
+      },
+      {
+        title: "炽热海大心",
+        image: "./archive-07.jpg",
+        student: "202511911325",
+        lead: "蓝色外框像知识海洋，红色内芯像赤子之心。",
+        concept: "作品背后是不断揉捏、堆叠和填色的过程，正如海大学子在求学路上不断打磨自我、追求卓越的缩影。蓝色外框象征知识的海洋，红色内芯则像明德至善、爱校荣校的一颗赤子之心。",
+        tags: ["海大学子", "校训呼应", "知识海洋", "赤子之心"],
+        icon: "image"
+      },
+      {
+        title: "《海绵宝宝之广海活力贴》",
+        image: "./archive-08.jpg",
+        student: "202411541518",
+        lead: "海绵宝宝的热情乐观与校园朝气被并置在一起。",
+        concept: "海绵宝宝永远热情乐观、积极向上，像校园里的我们一样，对生活和未来始终充满热爱。作者用石塑粘土还原了它元气满满的形象，把这份治愈活力与广海记忆结合，让积极的能量陪伴日常。",
+        tags: ["热情乐观", "校园朝气", "治愈活力", "广海记忆"],
+        icon: "bulb"
+      },
+      {
+        title: "花猫和金熊",
+        image: "./archive-09.jpg",
+        student: "202412101431 / 202312101128",
+        lead: "灵感来源于校园里的小猫咪，带着很自然的生活观察感和亲近感。",
+        concept: "作品灵感来源于学校里众多可爱的小猫咪。它不靠宏大叙事取胜，而是从最贴近日常的校园观察中提炼记忆，让人一眼联想到校园生活里的轻松、柔软和陪伴。",
+        tags: ["校园猫咪", "生活观察", "亲近感", "轻松陪伴"],
+        icon: "image"
+      }
+    ];
+
+    const allWorks = archiveWorks;
+    const cardsGrid = document.getElementById("cardsGrid");
+    const archiveGrid = document.getElementById("archiveGrid");
+    const heroTitle = document.querySelector("[data-blur-title]");
+    const revealItems = [...document.querySelectorAll(".reveal")];
+    const heroNames = document.getElementById("heroNames");
+    const modal = document.getElementById("workModal");
+    const modalClose = document.getElementById("modalClose");
+    const modalBack = document.getElementById("modalBack");
+    const modalNext = document.getElementById("modalNext");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalLead = document.getElementById("modalLead");
+    const modalBody = document.getElementById("modalBody");
+    const modalImage = document.getElementById("modalImage");
+    const modalTags = document.getElementById("modalTags");
+    const modalKicker = document.getElementById("modalKicker");
+    const scrollButtons = [...document.querySelectorAll("[data-scroll]")];
+
+    let activeIndex = 0;
+
+    const ICONS = {
+      image: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 21q-.825 0-1.412-.587T3 19V5q0-.825.588-1.412T5 3h14q.825 0 1.413.588T21 5v14q0 .825-.587 1.413T19 21H5Zm1-4h12l-3.75-5-3 4L9 13l-3 4Z"></path></svg>',
+      movie: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 6.47 5.76 10H20v8H4V6.47M22 4h-4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.89-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4Z"></path></svg>',
+      bulb: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1Zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7Z"></path></svg>'
+    };
+
+    function createFeaturedCard(work, index) {
+      const card = document.createElement("button");
+      card.type = "button";
+      card.className = "work-card liquid-glass reveal";
+      card.dataset.index = String(index);
+      card.dataset.delay = String(0.2 + index * 0.15);
+      card.innerHTML = `
+        <div class="card-top">
+          <div class="card-icon-wrap liquid-glass">
+            <div class="card-icon-inner liquid-glass">${ICONS[work.icon] || ICONS.image}</div>
+          </div>
+          <div class="card-tags">
+            ${work.tags.map((tag) => `<span class="card-tag liquid-glass">${tag}</span>`).join("")}
+          </div>
+        </div>
+        <div class="card-media liquid-glass">
+          <img src="${work.image}" alt="${work.title}" />
+        </div>
+        <div class="card-body">
+          <h3 class="card-title">${work.title}</h3>
+          <p class="card-text">${work.lead}</p>
+          <div class="card-meta">Student ID · ${work.student}</div>
+        </div>
+      `;
+      return card;
+    }
+
+    function createArchiveCard(work, index) {
+      const card = document.createElement("button");
+      card.type = "button";
+      card.className = "archive-card liquid-glass";
+      card.dataset.index = String(index);
+      card.innerHTML = `
+        <img src="${work.image}" alt="${work.title}" />
+        <strong>${work.title}</strong>
+        <p>${work.lead}</p>
+        <small>Student ID · ${work.student}</small>
+      `;
+      return card;
+    }
+
+    featuredWorks.forEach((work, index) => cardsGrid.appendChild(createFeaturedCard(work, index)));
+    archiveWorks.forEach((work, index) => archiveGrid.appendChild(createArchiveCard(work, index)));
+    archiveWorks.slice(0, 5).forEach((work) => {
+      const span = document.createElement("span");
+      span.textContent = work.title;
+      heroNames.appendChild(span);
+    });
+
+    function openModal(index) {
+      const work = allWorks[index];
+      if (!work) return;
+      activeIndex = index;
+      modal.classList.add("open");
+      modalTitle.textContent = work.title;
+      modalLead.textContent = work.lead;
+      modalBody.textContent = work.concept;
+      modalImage.src = work.image;
+      modalImage.alt = work.title;
+      modalKicker.textContent = `Focused Work · ${work.student}`;
+      modalTags.innerHTML = work.tags.concat([`Student ID · ${work.student}`]).map((tag) => `<span>${tag}</span>`).join("");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeModalFn() {
+      modal.classList.remove("open");
+      document.body.style.overflow = "";
+    }
+
+    modalClose.addEventListener("click", closeModalFn);
+    modalBack.addEventListener("click", closeModalFn);
+    modal.addEventListener("click", (event) => {
+      if (event.target === modal) closeModalFn();
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeModalFn();
+    });
+    modalNext.addEventListener("click", () => {
+      openModal((activeIndex + 1) % allWorks.length);
+    });
+
+    cardsGrid.addEventListener("click", (event) => {
+      const card = event.target.closest(".work-card");
+      if (!card) return;
+      openModal(Number(card.dataset.index));
+    });
+    archiveGrid.addEventListener("click", (event) => {
+      const card = event.target.closest(".archive-card");
+      if (!card) return;
+      openModal(Number(card.dataset.index));
+    });
+
+    function updateProgress() {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      const ratio = max > 0 ? (window.scrollY / max) * 100 : 0;
+      document.documentElement.style.setProperty("--progress", `${ratio}%`);
+    }
+
+    window.addEventListener("scroll", updateProgress, { passive: true });
+    updateProgress();
+
+    scrollButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const selector = button.getAttribute("data-scroll");
+        const target = document.querySelector(selector);
+        if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    });
+
+    const titleObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          heroTitle.classList.add("in-view");
+          titleObserver.disconnect();
+        }
+      });
+    }, { threshold: 0.1 });
+    titleObserver.observe(heroTitle);
+
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const delay = Number(entry.target.dataset.delay || 0);
+          setTimeout(() => entry.target.classList.add("visible"), delay * 1000);
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.18 });
+
+    revealItems.concat([...document.querySelectorAll(".work-card")]).forEach((item) => revealObserver.observe(item));
+
+    function attachFadingVideo(video) {
+      const FADE_MS = 500;
+      const FADE_OUT_LEAD = 0.55;
+      let rafId = null;
+      let fadingOut = false;
+
+      function readOpacity() {
+        const raw = video.style.opacity;
+        const value = raw === "" ? 0 : Number(raw);
+        return Number.isFinite(value) ? value : 0;
+      }
+
+      function fadeTo(target, duration) {
+        if (rafId) cancelAnimationFrame(rafId);
+        const from = readOpacity();
+        const start = performance.now();
+        const step = (now) => {
+          const progress = Math.min((now - start) / duration, 1);
+          video.style.opacity = String(from + (target - from) * progress);
+          if (progress < 1) rafId = requestAnimationFrame(step);
+          else rafId = null;
+        };
+        rafId = requestAnimationFrame(step);
+      }
+
+      async function playVideo() {
+        try { await video.play(); } catch (error) { console.warn("Video autoplay prevented:", error); }
+      }
+
+      function handleLoadedData() {
+        video.style.opacity = "0";
+        playVideo().then(() => fadeTo(1, FADE_MS));
+      }
+
+      function handleTimeUpdate() {
+        const remaining = video.duration - video.currentTime;
+        if (!fadingOut && remaining <= FADE_OUT_LEAD && remaining > 0) {
+          fadingOut = true;
+          fadeTo(0, FADE_MS);
+        }
+      }
+
+      function handleEnded() {
+        video.style.opacity = "0";
+        setTimeout(() => {
+          video.currentTime = 0;
+          fadingOut = false;
+          playVideo().then(() => fadeTo(1, FADE_MS));
+        }, 100);
+      }
+
+      video.addEventListener("loadeddata", handleLoadedData);
+      video.addEventListener("timeupdate", handleTimeUpdate);
+      video.addEventListener("ended", handleEnded);
+      video.style.opacity = "0";
+      if (video.readyState >= 2) handleLoadedData();
+      else video.load();
+    }
+
+    document.querySelectorAll(".js-fading-video").forEach(attachFadingVideo);
+  </script>
+</body>
+</html>

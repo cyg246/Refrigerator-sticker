@@ -1,0 +1,11 @@
+.fridge-site/
+.preview-server/
+__pycache__/
+site/__pycache__/
+site/uploads/upload-*
+site/
+render.yaml
+requirements.txt
+.superpowers/
+冰箱贴活动设计理念.xlsx
+微信图片_*.jpg
